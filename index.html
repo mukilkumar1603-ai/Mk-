@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gemini AI Assistant</title>
+  <title>SMK Chatbot</title>
   
-  <!-- Inter & Roboto Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- Markdown Parser, Code Syntax Highlighting & Math (KaTeX) -->
+  <!-- Markdown, Code Syntax Highlighting & Math Support -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
@@ -115,7 +114,7 @@
     }
     .top-bar-title {
       font-size: 18px;
-      font-weight: 500;
+      font-weight: 600;
       background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -127,7 +126,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      padding: 6px;
+      padding: 8px;
       border-radius: 50%;
     }
     .icon-btn:hover { background: var(--bg-surface-elevated); color: var(--text-main); }
@@ -153,7 +152,7 @@
     }
     .hero-greeting h1 {
       font-size: 38px;
-      font-weight: 500;
+      font-weight: 600;
       background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -182,6 +181,18 @@
       word-break: break-word;
     }
 
+    .attached-file-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #36373a;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: var(--accent-blue);
+    }
+
     /* Model Message */
     .message.model {
       align-self: flex-start;
@@ -199,6 +210,32 @@
     }
     .message.model .content { color: var(--text-main); }
 
+    /* Response Options Action Bar */
+    .response-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      opacity: 0.85;
+    }
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .action-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: #555;
+    }
+
     /* Markdown Styling */
     .content p { margin-bottom: 12px; }
     .content p:last-child { margin-bottom: 0; }
@@ -209,7 +246,7 @@
     .content th { background: var(--bg-surface-elevated); }
     .content code { font-family: 'Roboto Mono', monospace; font-size: 13px; background: #282a2c; padding: 2px 6px; border-radius: 4px; }
 
-    /* Code Blocks with Copy Button */
+    /* Code Blocks */
     .code-block-wrapper {
       position: relative;
       margin: 14px 0;
@@ -253,14 +290,32 @@
       background-color: var(--bg-surface);
       border-radius: 28px;
       border: 1px solid var(--border-color);
-      padding: 12px 18px;
+      padding: 10px 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
     .composer-box:focus-within { border-color: #555; }
-    .composer-row { display: flex; align-items: flex-end; gap: 12px; }
+
+    /* Attachment Chip in Composer */
+    .attachment-preview {
+      display: none;
+      align-self: flex-start;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+    .attachment-preview.active { display: inline-flex; }
+    .remove-file-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+    .remove-file-btn:hover { color: #f87171; }
+
+    .composer-row { display: flex; align-items: flex-end; gap: 10px; }
     .composer-box textarea {
       flex: 1;
       background: transparent;
@@ -302,16 +357,16 @@
 
     <div class="sidebar-config">
       <label>Gemini API Key</label>
-      <input type="password" id="apiKeyInput" placeholder="AIzaSy..." />
+      <input type="password" id="apiKeyInput" placeholder="Paste your API key here" />
       <span id="apiKeyStatus" style="color: #a8c7fa; font-size: 11px;"></span>
     </div>
 
     <div class="sidebar-config">
-      <label>Model</label>
-      <input type="text" id="modelInput" value="gemini-2.5-flash" />
+      <label>Model Engine</label>
+      <input type="text" id="modelInput" value="gemini-3.8-flash" />
     </div>
 
-    <div class="chat-list-title">Recent Chats</div>
+    <div class="chat-list-title">History</div>
     <div class="chat-list" id="chatList"></div>
   </aside>
 
@@ -321,13 +376,13 @@
       <button class="icon-btn" onclick="toggleSidebar()" title="Toggle sidebar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
-      <span class="top-bar-title">Gemini</span>
+      <span class="top-bar-title">SMK Chatbot</span>
     </div>
 
     <div class="chat-scroll" id="chatScroll">
       <div class="hero-greeting" id="heroGreeting">
-        <h1>Hello</h1>
-        <p>How can I help you today?</p>
+        <h1>SMK Chatbot</h1>
+        <p>Ready to assist. Ask a question or attach a file to get started.</p>
       </div>
 
       <div class="message-container" id="messageContainer"></div>
@@ -336,14 +391,29 @@
     <!-- Input Dock -->
     <div class="composer-dock">
       <div class="composer-box">
+        <!-- Attachment Indicator -->
+        <div class="attachment-preview" id="attachmentPreview">
+          <span id="attachmentName">file.pdf</span>
+          <button class="remove-file-btn" onclick="clearAttachedFile()">✕</button>
+        </div>
+
         <div class="composer-row">
-          <textarea id="promptInput" rows="1" placeholder="Ask Gemini..."></textarea>
+          <!-- Hidden File Input -->
+          <input type="file" id="fileUpload" style="display:none;" onchange="handleFileSelected(event)" />
+          
+          <!-- Attachment Button -->
+          <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Attach file or image">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+          </button>
+
+          <textarea id="promptInput" rows="1" placeholder="Message SMK Chatbot..."></textarea>
+          
           <button class="send-circle-btn" id="sendBtn" onclick="handleSend()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
           </button>
         </div>
       </div>
-      <div class="disclaimer">Gemini may display inaccurate info, so double-check its responses.</div>
+      <div class="disclaimer">SMK Chatbot can make mistakes. Verify important information.</div>
     </div>
   </main>
 
@@ -358,19 +428,24 @@
     const promptInput = document.getElementById("promptInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatList = document.getElementById("chatList");
+    const fileUpload = document.getElementById("fileUpload");
+    const attachmentPreview = document.getElementById("attachmentPreview");
+    const attachmentName = document.getElementById("attachmentName");
 
     let history = [];
+    let currentAttachment = null;
+    let lastUserPrompt = "";
 
-    // Load saved API Key
-    if (localStorage.getItem("user_gemini_key")) {
-      apiKeyInput.value = localStorage.getItem("user_gemini_key");
-      apiKeyStatus.textContent = "✓ Key saved in browser";
+    // Load saved API key
+    if (localStorage.getItem("smk_api_key")) {
+      apiKeyInput.value = localStorage.getItem("smk_api_key");
+      apiKeyStatus.textContent = "✓ Key loaded";
     }
 
     apiKeyInput.addEventListener("input", () => {
       const key = apiKeyInput.value.trim();
-      localStorage.setItem("user_gemini_key", key);
-      apiKeyStatus.textContent = key ? "✓ Key saved in browser" : "";
+      localStorage.setItem("smk_api_key", key);
+      apiKeyStatus.textContent = key ? "✓ Key saved" : "";
     });
 
     // Auto-grow textarea
@@ -385,36 +460,56 @@
 
     function startNewChat() {
       history = [];
+      clearAttachedFile();
       messageContainer.innerHTML = "";
       heroGreeting.style.display = "flex";
       promptInput.value = "";
       promptInput.style.height = "24px";
     }
 
+    // File Upload Handler (Converts file to base64)
+    function handleFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const base64Data = event.target.result.split(",")[1];
+        currentAttachment = {
+          name: file.name,
+          mimeType: file.type || "application/octet-stream",
+          data: base64Data
+        };
+        attachmentName.textContent = file.name;
+        attachmentPreview.classList.add("active");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearAttachedFile() {
+      currentAttachment = null;
+      fileUpload.value = "";
+      attachmentPreview.classList.remove("active");
+    }
+
     function renderMarkdown(rawText, containerElement) {
-      // Convert markdown
       containerElement.innerHTML = marked.parse(rawText);
 
-      // Syntax highlight code blocks & add copy buttons
       containerElement.querySelectorAll("pre code").forEach((codeBlock) => {
         hljs.highlightElement(codeBlock);
-
         const pre = codeBlock.parentElement;
         if (!pre.parentElement.classList.contains("code-block-wrapper")) {
           const wrapper = document.createElement("div");
           wrapper.className = "code-block-wrapper";
-
           const header = document.createElement("div");
           header.className = "code-header";
           header.innerHTML = `<span>code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button>`;
-
           pre.parentNode.insertBefore(wrapper, pre);
           wrapper.appendChild(header);
           wrapper.appendChild(pre);
         }
       });
 
-      // Render math equations with KaTeX
       renderMathInElement(containerElement, {
         delimiters: [
           { left: "$$", right: "$$", display: true },
@@ -431,11 +526,41 @@
       setTimeout(() => { btn.textContent = "Copy"; }, 2000);
     }
 
-    function appendUserMessage(text) {
+    // Response Action Handlers
+    function copyReply(btn, text) {
+      navigator.clipboard.writeText(text);
+      const original = btn.innerHTML;
+      btn.innerHTML = `✓ Copied`;
+      setTimeout(() => { btn.innerHTML = original; }, 2000);
+    }
+
+    function speakReply(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Text-to-speech not supported on this browser.");
+      }
+    }
+
+    function downloadReply(text) {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `smk-response-${Date.now()}.txt`;
+      a.click();
+    }
+
+    function appendUserMessage(text, fileName) {
       heroGreeting.style.display = "none";
       const div = document.createElement("div");
       div.className = "message user";
-      div.textContent = text;
+      if (fileName) {
+        div.innerHTML = `<div class="attached-file-badge">📎 ${fileName}</div><div>${text}</div>`;
+      } else {
+        div.textContent = text;
+      }
       messageContainer.appendChild(div);
       chatScroll.scrollTop = chatScroll.scrollHeight;
     }
@@ -446,39 +571,62 @@
       div.innerHTML = `
         <div class="role-header">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          Gemini
+          SMK Chatbot
         </div>
         <div class="content">...</div>
+        <div class="response-actions" style="display:none;"></div>
       `;
       messageContainer.appendChild(div);
       chatScroll.scrollTop = chatScroll.scrollHeight;
-      return div.querySelector(".content");
+      return {
+        content: div.querySelector(".content"),
+        actions: div.querySelector(".response-actions")
+      };
     }
 
-    async function handleSend() {
-      const text = promptInput.value.trim();
+    async function handleSend(retryPrompt = null) {
+      const text = retryPrompt || promptInput.value.trim();
       const apiKey = apiKeyInput.value.trim();
-      const model = modelInput.value.trim() || "gemini-2.5-flash";
+      const model = modelInput.value.trim() || "gemini-3.8-flash";
 
       if (!apiKey) {
-        alert("Please enter your Gemini API key in the sidebar.");
+        alert("Please paste your Gemini API key in the sidebar first.");
         return;
       }
-      if (!text) return;
+      if (!text && !currentAttachment) return;
 
-      appendUserMessage(text);
+      lastUserPrompt = text;
+      const attached = currentAttachment;
+      appendUserMessage(text || "(Sent attachment)", attached ? attached.name : null);
+
       promptInput.value = "";
       promptInput.style.height = "24px";
       sendBtn.disabled = true;
 
-      history.push({ role: "user", parts: [{ text }] });
-      const contentTarget = createModelMessagePlaceholder();
+      // Construct user parts (including file attachment if present)
+      const parts = [];
+      if (attached) {
+        parts.push({
+          inlineData: {
+            mimeType: attached.mimeType,
+            data: attached.data
+          }
+        });
+      }
+      if (text) {
+        parts.push({ text: text });
+      }
 
-      // Add to sidebar chat list if first message
+      history.push({ role: "user", parts: parts });
+      clearAttachedFile();
+
+      const { content: contentTarget, actions: actionsTarget } = createModelMessagePlaceholder();
+
+      // Add to sidebar history
       if (history.length === 1) {
         const item = document.createElement("div");
         item.className = "chat-item";
-        item.textContent = text.slice(0, 30) + (text.length > 30 ? "..." : "");
+        item.textContent = (text || attached.name).slice(0, 30) + "...";
         chatList.prepend(item);
       }
 
@@ -515,14 +663,22 @@
                 fullReply += textChunk;
                 renderMarkdown(fullReply, contentTarget);
                 chatScroll.scrollTop = chatScroll.scrollHeight;
-              } catch (e) {
-                // ignore SSE parse glitches
-              }
+              } catch (e) {}
             }
           }
         }
 
         history.push({ role: "model", parts: [{ text: fullReply }] });
+
+        // Populate response action buttons
+        actionsTarget.innerHTML = `
+          <button class="action-btn" onclick="copyReply(this, \`${encodeURIComponent(fullReply)}\`)">📋 Copy</button>
+          <button class="action-btn" onclick="speakReply(decodeURIComponent(\`${encodeURIComponent(fullReply)}\`))">🔊 Listen</button>
+          <button class="action-btn" onclick="downloadReply(decodeURIComponent(\`${encodeURIComponent(fullReply)}\`))">💾 Save</button>
+          <button class="action-btn" onclick="handleSend('${text.replace(/'/g, "\\'")}')">🔄 Regenerate</button>
+        `;
+        actionsTarget.style.display = "flex";
+
       } catch (err) {
         contentTarget.innerHTML = `<span style="color:#f87171;">Error: ${err.message}</span>`;
       } finally {
