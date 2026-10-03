@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>SMK Chatbot</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,23 +30,53 @@
       --active-item: #333538;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: var(--bg-primary); color: var(--text-main); display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    html, body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      height: 100%;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      position: fixed;
+    }
 
-    /* Collapsible Sidebar */
+    /* Backdrop overlay on tablet/mobile when sidebar is open */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 40;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Responsive Slide Drawer Sidebar */
     .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
       width: 280px;
       background-color: var(--bg-surface);
       display: flex;
       flex-direction: column;
       padding: 16px 12px;
       gap: 14px;
-      flex-shrink: 0;
       border-right: 1px solid var(--border-color);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 50;
     }
-    .sidebar.closed { margin-left: -280px; }
+    .sidebar.open {
+      transform: translateX(0);
+    }
 
     .new-chat-btn {
       display: flex;
@@ -60,10 +90,9 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.15s;
     }
     .new-chat-btn:hover { background-color: #37393b; }
-    .new-chat-btn:active { transform: scale(0.98); }
 
     .sidebar-config {
       display: flex;
@@ -80,7 +109,6 @@
       border-radius: 8px;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.2s;
     }
     .sidebar-config input:focus { border-color: var(--accent-blue); }
 
@@ -103,7 +131,6 @@
     }
     .clear-all-btn:hover { color: #f87171; }
 
-    /* Saved Chat Sessions List */
     .chat-list {
       flex: 1;
       overflow-y: auto;
@@ -117,7 +144,6 @@
       justify-content: space-between;
       border-radius: 8px;
       padding: 2px 6px;
-      transition: background 0.15s;
     }
     .chat-item-wrapper:hover { background-color: var(--bg-surface-elevated); }
     .chat-item-wrapper.active { background-color: var(--active-item); font-weight: 500; }
@@ -142,18 +168,16 @@
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
-      opacity: 0;
-      transition: opacity 0.15s, color 0.15s;
     }
-    .chat-item-wrapper:hover .delete-chat-btn { opacity: 1; }
     .delete-chat-btn:hover { color: #f87171; }
 
     /* Main Workspace */
     .main {
-      flex: 1;
+      width: 100vw;
+      height: 100%;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
-      height: 100%;
       position: relative;
       background-color: var(--bg-primary);
     }
@@ -162,17 +186,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 20px;
+      padding: 10px 16px;
       border-bottom: 1px solid var(--border-color);
-      background-color: var(--bg-primary);
+      flex-shrink: 0;
     }
     .top-bar-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
     .top-bar-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
       -webkit-background-clip: text;
@@ -185,13 +209,12 @@
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
       padding: 8px;
       border-radius: 50%;
-      transition: background 0.15s, color 0.15s;
     }
     .icon-btn:hover { background: var(--bg-surface-elevated); color: var(--text-main); }
 
-    /* Dynamic Model Selector Pill */
     .model-selector-wrapper {
       position: relative;
       display: inline-flex;
@@ -203,19 +226,17 @@
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 8px 34px 8px 14px;
+      padding: 6px 28px 6px 12px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       outline: none;
       cursor: pointer;
-      transition: border-color 0.15s;
-      max-width: 240px;
+      max-width: 180px;
     }
-    .model-select:hover, .model-select:focus { border-color: var(--accent-blue); }
     .model-selector-wrapper svg {
       position: absolute;
-      right: 12px;
+      right: 10px;
       pointer-events: none;
       color: var(--text-muted);
     }
@@ -224,11 +245,10 @@
     .chat-scroll {
       flex: 1;
       overflow-y: auto;
-      padding: 30px 16px;
+      padding: 20px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      scroll-behavior: smooth;
     }
 
     .hero-greeting {
@@ -237,43 +257,42 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 12px;
-      max-width: 600px;
-      animation: fadeIn 0.4s ease;
+      gap: 10px;
+      max-width: 500px;
+      padding: 0 16px;
     }
     .hero-greeting h1 {
-      font-size: 38px;
+      font-size: 32px;
       font-weight: 600;
       background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .hero-greeting p { color: var(--text-muted); font-size: 16px; }
+    .hero-greeting p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
     .message-container {
       width: 100%;
-      max-width: 820px;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 20px;
     }
 
     .message {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      font-size: 15px;
-      line-height: 1.68;
-      animation: fadeIn 0.25s ease;
+      gap: 6px;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .message.user {
       align-self: flex-end;
       background-color: var(--user-bubble);
       color: var(--text-main);
-      padding: 12px 20px;
-      border-radius: 20px;
-      max-width: 80%;
+      padding: 10px 16px;
+      border-radius: 18px;
+      max-width: 85%;
       white-space: pre-wrap;
       word-break: break-word;
     }
@@ -299,7 +318,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--accent-blue);
       margin-bottom: 4px;
@@ -309,43 +328,40 @@
     .response-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      opacity: 0.9;
+      gap: 6px;
+      margin-top: 8px;
     }
     .action-btn {
       background: transparent;
       border: 1px solid var(--border-color);
       color: var(--text-muted);
       border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12px;
+      padding: 4px 10px;
+      font-size: 11px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       cursor: pointer;
-      transition: all 0.15s;
     }
     .action-btn:hover {
       background: var(--bg-surface-elevated);
       color: var(--text-main);
-      border-color: #555;
     }
 
     /* Markdown Styling */
-    .content p { margin-bottom: 12px; }
+    .content p { margin-bottom: 10px; }
     .content p:last-child { margin-bottom: 0; }
-    .content ul, .content ol { margin-left: 24px; margin-bottom: 12px; }
+    .content ul, .content ol { margin-left: 20px; margin-bottom: 10px; }
     .content li { margin-bottom: 4px; }
-    .content table { border-collapse: collapse; margin: 16px 0; width: 100%; font-size: 14px; }
-    .content th, .content td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; }
+    .content table { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 13px; }
+    .content th, .content td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; }
     .content th { background: var(--bg-surface-elevated); }
-    .content code { font-family: 'Roboto Mono', monospace; font-size: 13px; background: #282a2c; padding: 2px 6px; border-radius: 4px; }
+    .content code { font-family: 'Roboto Mono', monospace; font-size: 12px; background: #282a2c; padding: 2px 4px; border-radius: 4px; }
 
     /* Code Blocks */
     .code-block-wrapper {
       position: relative;
-      margin: 14px 0;
+      margin: 12px 0;
       border-radius: 8px;
       overflow: hidden;
       background: #18181b;
@@ -357,7 +373,7 @@
       align-items: center;
       background: #242427;
       padding: 6px 12px;
-      font-size: 12px;
+      font-size: 11px;
       color: #a1a1aa;
       font-family: 'Roboto Mono', monospace;
     }
@@ -366,11 +382,10 @@
       border: none;
       color: #a1a1aa;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
     }
-    .copy-btn:hover { color: #fff; }
-    .code-block-wrapper pre { margin: 0; padding: 14px; overflow-x: auto; }
-    .code-block-wrapper pre code { background: transparent; padding: 0; font-size: 13px; }
+    .code-block-wrapper pre { margin: 0; padding: 12px; overflow-x: auto; }
+    .code-block-wrapper pre code { background: transparent; padding: 0; font-size: 12px; }
 
     /* Composer Dock */
     .composer-dock {
@@ -378,20 +393,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0 16px 20px;
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      background-color: var(--bg-primary);
     }
     .composer-box {
       width: 100%;
-      max-width: 820px;
+      max-width: 800px;
       background-color: var(--bg-surface);
-      border-radius: 28px;
+      border-radius: 24px;
       border: 1px solid var(--border-color);
-      padding: 10px 18px;
+      padding: 8px 14px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      transition: border-color 0.15s;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
     }
     .composer-box:focus-within { border-color: #555; }
 
@@ -399,34 +415,33 @@
       display: none;
       align-self: flex-start;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 4px 10px;
-      font-size: 12px;
+      border-radius: 12px;
+      padding: 3px 8px;
+      font-size: 11px;
       color: var(--text-main);
     }
     .attachment-preview.active { display: inline-flex; }
-    .remove-file-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
-    .remove-file-btn:hover { color: #f87171; }
+    .remove-file-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; }
 
-    .composer-row { display: flex; align-items: flex-end; gap: 10px; }
+    .composer-row { display: flex; align-items: flex-end; gap: 8px; }
     .composer-box textarea {
       flex: 1;
       background: transparent;
       border: none;
       color: var(--text-main);
-      font-size: 15px;
+      font-size: 14px;
       outline: none;
       resize: none;
       height: 24px;
-      max-height: 220px;
+      max-height: 140px;
       line-height: 1.5;
     }
     .send-circle-btn {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: var(--text-main);
       color: #000000;
@@ -436,22 +451,36 @@
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: transform 0.1s, background 0.15s;
     }
-    .send-circle-btn:active { transform: scale(0.95); }
     .send-circle-btn:disabled { background: #37393b; color: #666; cursor: not-allowed; }
 
-    .disclaimer { font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center; }
+    .disclaimer { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: center; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* On large desktop screens, dock the sidebar side-by-side cleanly */
+    @media (min-width: 1024px) {
+      .sidebar {
+        transform: translateX(0);
+        position: relative;
+      }
+      .sidebar.closed {
+        display: none;
+      }
+      .main {
+        flex: 1;
+        width: calc(100vw - 280px);
+      }
+      .sidebar-overlay {
+        display: none !important;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Left Sidebar with Reloadable History -->
+  <!-- Drawer Backdrop for mobile/tablet -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Left Sidebar Drawer -->
   <aside class="sidebar" id="sidebar">
     <button class="new-chat-btn" onclick="startNewChat()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -476,7 +505,7 @@
   <main class="main">
     <div class="top-bar">
       <div class="top-bar-left">
-        <button class="icon-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+        <button class="icon-btn" onclick="toggleSidebar()" title="Toggle menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
         <span class="top-bar-title">SMK Chatbot</span>
@@ -489,14 +518,14 @@
           <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
           <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
         </select>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
     </div>
 
     <div class="chat-scroll" id="chatScroll">
       <div class="hero-greeting" id="heroGreeting">
         <h1>SMK Chatbot</h1>
-        <p>Ready to assist. Select your model above, attach files, or reload previous conversations.</p>
+        <p>Ready to assist. Select your model above, attach files, or tap the menu to view history.</p>
       </div>
 
       <div class="message-container" id="messageContainer"></div>
@@ -520,7 +549,7 @@
           <textarea id="promptInput" rows="1" placeholder="Message SMK Chatbot..."></textarea>
           
           <button class="send-circle-btn" id="sendBtn" onclick="handleSend()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
           </button>
         </div>
       </div>
@@ -530,6 +559,7 @@
 
   <script>
     const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
     const apiKeyInput = document.getElementById("apiKeyInput");
     const apiKeyStatus = document.getElementById("apiKeyStatus");
     const modelSelect = document.getElementById("modelSelect");
@@ -544,11 +574,10 @@
     const attachmentName = document.getElementById("attachmentName");
 
     let currentSessionId = null;
-    let conversations = {}; // session store
+    let conversations = {};
     let currentAttachment = null;
     let rawReplies = {};
 
-    // 1. Initial Storage & Config Setup
     function loadSavedState() {
       if (localStorage.getItem("smk_api_key")) {
         const savedKey = localStorage.getItem("smk_api_key");
@@ -614,26 +643,34 @@
 
     promptInput.addEventListener("input", () => {
       promptInput.style.height = "auto";
-      promptInput.style.height = Math.min(promptInput.scrollHeight, 220) + "px";
+      promptInput.style.height = Math.min(promptInput.scrollHeight, 140) + "px";
     });
 
     function toggleSidebar() {
-      sidebar.classList.toggle("closed");
+      const isOpen = sidebar.classList.contains("open");
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        sidebar.classList.add("open");
+        sidebarOverlay.classList.add("active");
+      }
     }
 
-    // 2. Chat Session Management & Dynamic Reloading
+    function closeSidebar() {
+      sidebar.classList.remove("open");
+      sidebarOverlay.classList.remove("active");
+    }
+
     function startNewChat() {
       currentSessionId = "session_" + Date.now();
-      conversations[currentSessionId] = {
-        title: "New conversation",
-        history: []
-      };
+      conversations[currentSessionId] = { title: "New conversation", history: [] };
       clearAttachedFile();
       messageContainer.innerHTML = "";
       heroGreeting.style.display = "flex";
       promptInput.value = "";
       promptInput.style.height = "24px";
       renderChatSessions();
+      closeSidebar();
     }
 
     function saveConversationsToStorage() {
@@ -655,7 +692,10 @@
         const btn = document.createElement("button");
         btn.className = "chat-item-btn";
         btn.textContent = conversations[id].title || "Chat";
-        btn.onclick = () => loadChatSession(id);
+        btn.onclick = () => {
+          loadChatSession(id);
+          closeSidebar();
+        };
 
         const delBtn = document.createElement("button");
         delBtn.className = "delete-chat-btn";
@@ -672,7 +712,6 @@
       });
     }
 
-    // Reloads any previous chat dynamically into view
     function loadChatSession(id) {
       if (!conversations[id]) return;
       currentSessionId = id;
@@ -722,7 +761,6 @@
       }
     }
 
-    // 3. File Attachments
     function handleFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -747,7 +785,6 @@
       attachmentPreview.classList.remove("active");
     }
 
-    // 4. Markdown, Syntax Highlighting & Math
     function renderMarkdown(rawText, containerElement) {
       containerElement.innerHTML = marked.parse(rawText);
 
@@ -851,7 +888,6 @@
       actionsTarget.style.display = "flex";
     }
 
-    // 5. Model Execution with Fallbacks
     async function executeModelRequest(apiKey, selectedModel, payload) {
       const options = Array.from(modelSelect.options).map(o => o.value);
       const candidates = [selectedModel, ...options].filter((v, i, a) => a.indexOf(v) === i);
@@ -957,7 +993,6 @@
       }
     });
 
-    // Start on page load
     loadSavedState();
     if (!currentSessionId) startNewChat();
   </script>
