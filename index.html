@@ -27,6 +27,7 @@
       --accent-blue: #a8c7fa;
       --user-bubble: #282a2c;
       --border-color: #36373a;
+      --active-item: #333538;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -39,10 +40,10 @@
       display: flex;
       flex-direction: column;
       padding: 16px 12px;
-      gap: 16px;
+      gap: 14px;
       flex-shrink: 0;
       border-right: 1px solid var(--border-color);
-      transition: margin-left 0.25s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 10;
     }
     .sidebar.closed { margin-left: -280px; }
@@ -59,14 +60,15 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, transform 0.1s;
     }
     .new-chat-btn:hover { background-color: #37393b; }
+    .new-chat-btn:active { transform: scale(0.98); }
 
     .sidebar-config {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       font-size: 12px;
       color: var(--text-muted);
     }
@@ -78,24 +80,75 @@
       border-radius: 8px;
       font-size: 13px;
       outline: none;
+      transition: border-color 0.2s;
     }
     .sidebar-config input:focus { border-color: var(--accent-blue); }
 
-    .chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-    .chat-list-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); padding: 8px 6px; }
-    .chat-item {
-      padding: 10px 12px;
+    .chat-history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 6px 2px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+    .clear-all-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .clear-all-btn:hover { color: #f87171; }
+
+    /* Saved Chat Sessions List */
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chat-item-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       border-radius: 8px;
-      font-size: 13px;
+      padding: 2px 6px;
+      transition: background 0.15s;
+    }
+    .chat-item-wrapper:hover { background-color: var(--bg-surface-elevated); }
+    .chat-item-wrapper.active { background-color: var(--active-item); font-weight: 500; }
+    
+    .chat-item-btn {
+      flex: 1;
+      background: none;
+      border: none;
       color: var(--text-main);
+      text-align: left;
+      padding: 8px 4px;
+      font-size: 13px;
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .chat-item:hover { background-color: var(--bg-surface-elevated); }
+    .delete-chat-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+    }
+    .chat-item-wrapper:hover .delete-chat-btn { opacity: 1; }
+    .delete-chat-btn:hover { color: #f87171; }
 
-    /* Main Area */
+    /* Main Workspace */
     .main {
       flex: 1;
       display: flex;
@@ -111,6 +164,7 @@
       justify-content: space-between;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border-color);
+      background-color: var(--bg-primary);
     }
     .top-bar-left {
       display: flex;
@@ -133,10 +187,11 @@
       align-items: center;
       padding: 8px;
       border-radius: 50%;
+      transition: background 0.15s, color 0.15s;
     }
     .icon-btn:hover { background: var(--bg-surface-elevated); color: var(--text-main); }
 
-    /* Model Pill Selector in Top Bar */
+    /* Dynamic Model Selector Pill */
     .model-selector-wrapper {
       position: relative;
       display: inline-flex;
@@ -148,17 +203,16 @@
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 8px 32px 8px 14px;
+      padding: 8px 34px 8px 14px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 500;
       outline: none;
       cursor: pointer;
       transition: border-color 0.15s;
+      max-width: 240px;
     }
-    .model-select:hover, .model-select:focus {
-      border-color: var(--accent-blue);
-    }
+    .model-select:hover, .model-select:focus { border-color: var(--accent-blue); }
     .model-selector-wrapper svg {
       position: absolute;
       right: 12px;
@@ -166,7 +220,7 @@
       color: var(--text-muted);
     }
 
-    /* Chat Messages Box */
+    /* Scrollable Conversation Stream */
     .chat-scroll {
       flex: 1;
       overflow-y: auto;
@@ -174,6 +228,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      scroll-behavior: smooth;
     }
 
     .hero-greeting {
@@ -184,6 +239,7 @@
       text-align: center;
       gap: 12px;
       max-width: 600px;
+      animation: fadeIn 0.4s ease;
     }
     .hero-greeting h1 {
       font-size: 38px;
@@ -202,7 +258,14 @@
       gap: 28px;
     }
 
-    .message { display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.68; }
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 15px;
+      line-height: 1.68;
+      animation: fadeIn 0.25s ease;
+    }
 
     .message.user {
       align-self: flex-end;
@@ -248,7 +311,7 @@
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 10px;
-      opacity: 0.85;
+      opacity: 0.9;
     }
     .action-btn {
       background: transparent;
@@ -309,7 +372,7 @@
     .code-block-wrapper pre { margin: 0; padding: 14px; overflow-x: auto; }
     .code-block-wrapper pre code { background: transparent; padding: 0; font-size: 13px; }
 
-    /* Bottom Input Composer */
+    /* Composer Dock */
     .composer-dock {
       width: 100%;
       display: flex;
@@ -328,6 +391,7 @@
       flex-direction: column;
       gap: 6px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.15s;
     }
     .composer-box:focus-within { border-color: #555; }
 
@@ -372,15 +436,22 @@
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
+      transition: transform 0.1s, background 0.15s;
     }
+    .send-circle-btn:active { transform: scale(0.95); }
     .send-circle-btn:disabled { background: #37393b; color: #666; cursor: not-allowed; }
 
     .disclaimer { font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Left Sidebar -->
+  <!-- Left Sidebar with Reloadable History -->
   <aside class="sidebar" id="sidebar">
     <button class="new-chat-btn" onclick="startNewChat()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -393,7 +464,11 @@
       <span id="apiKeyStatus" style="color: #a8c7fa; font-size: 11px;"></span>
     </div>
 
-    <div class="chat-list-title">History</div>
+    <div class="chat-history-header">
+      <span>Chat History</span>
+      <button class="clear-all-btn" onclick="clearAllChats()" title="Clear all chats">Clear all</button>
+    </div>
+    
     <div class="chat-list" id="chatList"></div>
   </aside>
 
@@ -410,10 +485,9 @@
       <!-- Header Model Choice Option -->
       <div class="model-selector-wrapper">
         <select class="model-select" id="modelSelect">
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash</option>
-          <option value="gemini-1.5-flash">Gemini 1.5 Flash (Ultra Stable)</option>
-          <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Reasoning)</option>
+          <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
         </select>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
@@ -422,7 +496,7 @@
     <div class="chat-scroll" id="chatScroll">
       <div class="hero-greeting" id="heroGreeting">
         <h1>SMK Chatbot</h1>
-        <p>Ready to assist. Select your model above, attach files, or ask anything.</p>
+        <p>Ready to assist. Select your model above, attach files, or reload previous conversations.</p>
       </div>
 
       <div class="message-container" id="messageContainer"></div>
@@ -469,23 +543,69 @@
     const attachmentPreview = document.getElementById("attachmentPreview");
     const attachmentName = document.getElementById("attachmentName");
 
-    let history = [];
+    let currentSessionId = null;
+    let conversations = {}; // session store
     let currentAttachment = null;
     let rawReplies = {};
 
-    // Load saved settings
-    if (localStorage.getItem("smk_api_key")) {
-      apiKeyInput.value = localStorage.getItem("smk_api_key");
-      apiKeyStatus.textContent = "✓ Key loaded";
+    // 1. Initial Storage & Config Setup
+    function loadSavedState() {
+      if (localStorage.getItem("smk_api_key")) {
+        const savedKey = localStorage.getItem("smk_api_key");
+        apiKeyInput.value = savedKey;
+        refreshAvailableModels(savedKey);
+      }
+      if (localStorage.getItem("smk_selected_model")) {
+        modelSelect.value = localStorage.getItem("smk_selected_model");
+      }
+      if (localStorage.getItem("smk_conversations")) {
+        try {
+          conversations = JSON.parse(localStorage.getItem("smk_conversations"));
+        } catch (e) {
+          conversations = {};
+        }
+      }
+      renderChatSessions();
     }
-    if (localStorage.getItem("smk_selected_model")) {
-      modelSelect.value = localStorage.getItem("smk_selected_model");
+
+    async function refreshAvailableModels(key) {
+      if (!key) return;
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        const data = await res.json();
+        if (data.models && Array.isArray(data.models)) {
+          const supported = data.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace("models/", ""));
+
+          if (supported.length > 0) {
+            const currentSelected = modelSelect.value;
+            modelSelect.innerHTML = "";
+            supported.forEach(m => {
+              const opt = document.createElement("option");
+              opt.value = m;
+              opt.textContent = m;
+              modelSelect.appendChild(opt);
+            });
+            if (supported.includes(currentSelected)) {
+              modelSelect.value = currentSelected;
+            } else {
+              modelSelect.selectedIndex = 0;
+            }
+            apiKeyStatus.textContent = `✓ Key active (${supported.length} models)`;
+          }
+        }
+      } catch (err) {}
     }
 
     apiKeyInput.addEventListener("input", () => {
       const key = apiKeyInput.value.trim();
       localStorage.setItem("smk_api_key", key);
-      apiKeyStatus.textContent = key ? "✓ Key saved" : "";
+      if (key) {
+        refreshAvailableModels(key);
+      } else {
+        apiKeyStatus.textContent = "";
+      }
     });
 
     modelSelect.addEventListener("change", () => {
@@ -501,15 +621,108 @@
       sidebar.classList.toggle("closed");
     }
 
+    // 2. Chat Session Management & Dynamic Reloading
     function startNewChat() {
-      history = [];
+      currentSessionId = "session_" + Date.now();
+      conversations[currentSessionId] = {
+        title: "New conversation",
+        history: []
+      };
       clearAttachedFile();
       messageContainer.innerHTML = "";
       heroGreeting.style.display = "flex";
       promptInput.value = "";
       promptInput.style.height = "24px";
+      renderChatSessions();
     }
 
+    function saveConversationsToStorage() {
+      localStorage.setItem("smk_conversations", JSON.stringify(conversations));
+    }
+
+    function renderChatSessions() {
+      chatList.innerHTML = "";
+      const sessionIds = Object.keys(conversations).sort((a, b) => {
+        const tA = parseInt(a.replace("session_", "")) || 0;
+        const tB = parseInt(b.replace("session_", "")) || 0;
+        return tB - tA;
+      });
+
+      sessionIds.forEach(id => {
+        const item = document.createElement("div");
+        item.className = `chat-item-wrapper ${id === currentSessionId ? "active" : ""}`;
+
+        const btn = document.createElement("button");
+        btn.className = "chat-item-btn";
+        btn.textContent = conversations[id].title || "Chat";
+        btn.onclick = () => loadChatSession(id);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-chat-btn";
+        delBtn.innerHTML = "✕";
+        delBtn.title = "Delete chat";
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteChatSession(id);
+        };
+
+        item.appendChild(btn);
+        item.appendChild(delBtn);
+        chatList.appendChild(item);
+      });
+    }
+
+    // Reloads any previous chat dynamically into view
+    function loadChatSession(id) {
+      if (!conversations[id]) return;
+      currentSessionId = id;
+      renderChatSessions();
+
+      const session = conversations[id];
+      messageContainer.innerHTML = "";
+
+      if (!session.history || session.history.length === 0) {
+        heroGreeting.style.display = "flex";
+        return;
+      }
+
+      heroGreeting.style.display = "none";
+      session.history.forEach(item => {
+        if (item.role === "user") {
+          const userText = item.parts?.find(p => p.text)?.text || "";
+          const hasFile = item.parts?.some(p => p.inlineData);
+          appendUserMessage(userText, hasFile ? "Attachment" : null, false);
+        } else if (item.role === "model") {
+          const replyText = item.parts?.[0]?.text || "";
+          const msgId = Date.now() + Math.random();
+          const { content: c, actions: a } = createModelMessagePlaceholder(msgId);
+          rawReplies[msgId] = replyText;
+          renderMarkdown(replyText, c);
+          populateActionButtons(a, msgId, "");
+        }
+      });
+      chatScroll.scrollTop = chatScroll.scrollHeight;
+    }
+
+    function deleteChatSession(id) {
+      delete conversations[id];
+      saveConversationsToStorage();
+      if (currentSessionId === id) {
+        startNewChat();
+      } else {
+        renderChatSessions();
+      }
+    }
+
+    function clearAllChats() {
+      if (confirm("Delete all chat history?")) {
+        conversations = {};
+        saveConversationsToStorage();
+        startNewChat();
+      }
+    }
+
+    // 3. File Attachments
     function handleFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -534,6 +747,7 @@
       attachmentPreview.classList.remove("active");
     }
 
+    // 4. Markdown, Syntax Highlighting & Math
     function renderMarkdown(rawText, containerElement) {
       containerElement.innerHTML = marked.parse(rawText);
 
@@ -594,7 +808,7 @@
       a.click();
     }
 
-    function appendUserMessage(text, fileName) {
+    function appendUserMessage(text, fileName, scroll = true) {
       heroGreeting.style.display = "none";
       const div = document.createElement("div");
       div.className = "message user";
@@ -604,7 +818,7 @@
         div.textContent = text;
       }
       messageContainer.appendChild(div);
-      chatScroll.scrollTop = chatScroll.scrollHeight;
+      if (scroll) chatScroll.scrollTop = chatScroll.scrollHeight;
     }
 
     function createModelMessagePlaceholder(msgId) {
@@ -627,12 +841,23 @@
       };
     }
 
-    async function executeModelRequest(apiKey, selectedModel, payload) {
-      const fallbackModels = [selectedModel, "gemini-2.0-flash", "gemini-1.5-flash"];
-      const uniqueModels = [...new Set(fallbackModels)];
-      let lastError = null;
+    function populateActionButtons(actionsTarget, msgId, promptText) {
+      actionsTarget.innerHTML = `
+        <button class="action-btn" onclick="copyReply('${msgId}', this)">📋 Copy</button>
+        <button class="action-btn" onclick="speakReply('${msgId}')">🔊 Listen</button>
+        <button class="action-btn" onclick="downloadReply('${msgId}')">💾 Save</button>
+        <button class="action-btn" onclick="handleSend('${promptText.replace(/'/g, "\\'")}')">🔄 Regenerate</button>
+      `;
+      actionsTarget.style.display = "flex";
+    }
 
-      for (const m of uniqueModels) {
+    // 5. Model Execution with Fallbacks
+    async function executeModelRequest(apiKey, selectedModel, payload) {
+      const options = Array.from(modelSelect.options).map(o => o.value);
+      const candidates = [selectedModel, ...options].filter((v, i, a) => a.indexOf(v) === i);
+
+      let lastError = null;
+      for (const m of candidates) {
         try {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
           const response = await fetch(endpoint, {
@@ -649,7 +874,7 @@
 
           if (data.error) {
             lastError = data.error.message;
-            if (data.error.code === 503 || data.error.message.includes("demand")) {
+            if (data.error.code === 404 || data.error.code === 503 || data.error.message.includes("demand") || data.error.message.includes("not found")) {
               continue;
             }
             throw new Error(data.error.message);
@@ -658,7 +883,7 @@
           lastError = e.message;
         }
       }
-      throw new Error(lastError || "Model is currently experiencing high demand. Please select another model from the dropdown.");
+      throw new Error(lastError || "Could not generate content. Please verify your API key and connection.");
     }
 
     async function handleSend(retryPrompt = null) {
@@ -672,6 +897,12 @@
       }
       if (!text && !currentAttachment) return;
 
+      if (!currentSessionId || !conversations[currentSessionId]) {
+        currentSessionId = "session_" + Date.now();
+        conversations[currentSessionId] = { title: text.slice(0, 30) || "Conversation", history: [] };
+      }
+
+      const activeSession = conversations[currentSessionId];
       const attached = currentAttachment;
       appendUserMessage(text || "(Sent attachment)", attached ? attached.name : null);
 
@@ -688,38 +919,28 @@
           }
         });
       }
-      if (text) {
-        parts.push({ text: text });
-      }
+      if (text) parts.push({ text: text });
 
-      history.push({ role: "user", parts: parts });
+      activeSession.history.push({ role: "user", parts: parts });
+      if (activeSession.title === "New conversation") {
+        activeSession.title = (text || attached.name).slice(0, 28) + "...";
+      }
+      saveConversationsToStorage();
+      renderChatSessions();
       clearAttachedFile();
 
       const msgId = Date.now();
       const { content: contentTarget, actions: actionsTarget } = createModelMessagePlaceholder(msgId);
 
-      if (history.length === 1) {
-        const item = document.createElement("div");
-        item.className = "chat-item";
-        item.textContent = (text || attached.name).slice(0, 30) + "...";
-        chatList.prepend(item);
-      }
-
       try {
-        const replyText = await executeModelRequest(apiKey, model, { contents: history });
+        const replyText = await executeModelRequest(apiKey, model, { contents: activeSession.history });
         rawReplies[msgId] = replyText;
 
         renderMarkdown(replyText, contentTarget);
-        history.push({ role: "model", parts: [{ text: replyText }] });
+        activeSession.history.push({ role: "model", parts: [{ text: replyText }] });
+        saveConversationsToStorage();
 
-        actionsTarget.innerHTML = `
-          <button class="action-btn" onclick="copyReply('${msgId}', this)">📋 Copy</button>
-          <button class="action-btn" onclick="speakReply('${msgId}')">🔊 Listen</button>
-          <button class="action-btn" onclick="downloadReply('${msgId}')">💾 Save</button>
-          <button class="action-btn" onclick="handleSend('${text.replace(/'/g, "\\'")}')">🔄 Regenerate</button>
-        `;
-        actionsTarget.style.display = "flex";
-
+        populateActionButtons(actionsTarget, msgId, text);
       } catch (err) {
         contentTarget.innerHTML = `<span style="color:#f87171;">${err.message}</span>`;
       } finally {
@@ -735,6 +956,10 @@
         handleSend();
       }
     });
+
+    // Start on page load
+    loadSavedState();
+    if (!currentSessionId) startNewChat();
   </script>
 </body>
 </html>
