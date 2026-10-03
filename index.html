@@ -108,9 +108,14 @@
     .top-bar {
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: space-between;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border-color);
+    }
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
     .top-bar-title {
       font-size: 18px;
@@ -130,6 +135,36 @@
       border-radius: 50%;
     }
     .icon-btn:hover { background: var(--bg-surface-elevated); color: var(--text-main); }
+
+    /* Model Pill Selector in Top Bar */
+    .model-selector-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .model-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 32px 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .model-select:hover, .model-select:focus {
+      border-color: var(--accent-blue);
+    }
+    .model-selector-wrapper svg {
+      position: absolute;
+      right: 12px;
+      pointer-events: none;
+      color: var(--text-muted);
+    }
 
     /* Chat Messages Box */
     .chat-scroll {
@@ -169,7 +204,6 @@
 
     .message { display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.68; }
 
-    /* User Message */
     .message.user {
       align-self: flex-end;
       background-color: var(--user-bubble);
@@ -193,7 +227,6 @@
       color: var(--accent-blue);
     }
 
-    /* Model Message */
     .message.model {
       align-self: flex-start;
       width: 100%;
@@ -210,9 +243,9 @@
     }
     .message.model .content { color: var(--text-main); }
 
-    /* Response Options Action Bar */
     .response-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: 10px;
       opacity: 0.85;
@@ -222,7 +255,7 @@
       border: 1px solid var(--border-color);
       color: var(--text-muted);
       border-radius: 6px;
-      padding: 4px 10px;
+      padding: 6px 12px;
       font-size: 12px;
       display: inline-flex;
       align-items: center;
@@ -298,7 +331,6 @@
     }
     .composer-box:focus-within { border-color: #555; }
 
-    /* Attachment Chip in Composer */
     .attachment-preview {
       display: none;
       align-self: flex-start;
@@ -361,11 +393,6 @@
       <span id="apiKeyStatus" style="color: #a8c7fa; font-size: 11px;"></span>
     </div>
 
-    <div class="sidebar-config">
-      <label>Model Engine</label>
-      <input type="text" id="modelInput" value="gemini-3.8-flash" />
-    </div>
-
     <div class="chat-list-title">History</div>
     <div class="chat-list" id="chatList"></div>
   </aside>
@@ -373,16 +400,29 @@
   <!-- Main View -->
   <main class="main">
     <div class="top-bar">
-      <button class="icon-btn" onclick="toggleSidebar()" title="Toggle sidebar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </button>
-      <span class="top-bar-title">SMK Chatbot</span>
+      <div class="top-bar-left">
+        <button class="icon-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <span class="top-bar-title">SMK Chatbot</span>
+      </div>
+
+      <!-- Header Model Choice Option -->
+      <div class="model-selector-wrapper">
+        <select class="model-select" id="modelSelect">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash</option>
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash (Ultra Stable)</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Reasoning)</option>
+        </select>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
     </div>
 
     <div class="chat-scroll" id="chatScroll">
       <div class="hero-greeting" id="heroGreeting">
         <h1>SMK Chatbot</h1>
-        <p>Ready to assist. Ask a question or attach a file to get started.</p>
+        <p>Ready to assist. Select your model above, attach files, or ask anything.</p>
       </div>
 
       <div class="message-container" id="messageContainer"></div>
@@ -391,17 +431,14 @@
     <!-- Input Dock -->
     <div class="composer-dock">
       <div class="composer-box">
-        <!-- Attachment Indicator -->
         <div class="attachment-preview" id="attachmentPreview">
           <span id="attachmentName">file.pdf</span>
           <button class="remove-file-btn" onclick="clearAttachedFile()">✕</button>
         </div>
 
         <div class="composer-row">
-          <!-- Hidden File Input -->
           <input type="file" id="fileUpload" style="display:none;" onchange="handleFileSelected(event)" />
           
-          <!-- Attachment Button -->
           <button class="icon-btn" onclick="document.getElementById('fileUpload').click()" title="Attach file or image">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
           </button>
@@ -421,7 +458,7 @@
     const sidebar = document.getElementById("sidebar");
     const apiKeyInput = document.getElementById("apiKeyInput");
     const apiKeyStatus = document.getElementById("apiKeyStatus");
-    const modelInput = document.getElementById("modelInput");
+    const modelSelect = document.getElementById("modelSelect");
     const chatScroll = document.getElementById("chatScroll");
     const heroGreeting = document.getElementById("heroGreeting");
     const messageContainer = document.getElementById("messageContainer");
@@ -434,12 +471,15 @@
 
     let history = [];
     let currentAttachment = null;
-    let lastUserPrompt = "";
+    let rawReplies = {};
 
-    // Load saved API key
+    // Load saved settings
     if (localStorage.getItem("smk_api_key")) {
       apiKeyInput.value = localStorage.getItem("smk_api_key");
       apiKeyStatus.textContent = "✓ Key loaded";
+    }
+    if (localStorage.getItem("smk_selected_model")) {
+      modelSelect.value = localStorage.getItem("smk_selected_model");
     }
 
     apiKeyInput.addEventListener("input", () => {
@@ -448,7 +488,10 @@
       apiKeyStatus.textContent = key ? "✓ Key saved" : "";
     });
 
-    // Auto-grow textarea
+    modelSelect.addEventListener("change", () => {
+      localStorage.setItem("smk_selected_model", modelSelect.value);
+    });
+
     promptInput.addEventListener("input", () => {
       promptInput.style.height = "auto";
       promptInput.style.height = Math.min(promptInput.scrollHeight, 220) + "px";
@@ -467,7 +510,6 @@
       promptInput.style.height = "24px";
     }
 
-    // File Upload Handler (Converts file to base64)
     function handleFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -526,25 +568,25 @@
       setTimeout(() => { btn.textContent = "Copy"; }, 2000);
     }
 
-    // Response Action Handlers
-    function copyReply(btn, text) {
+    function copyReply(msgId, btn) {
+      const text = rawReplies[msgId] || "";
       navigator.clipboard.writeText(text);
       const original = btn.innerHTML;
       btn.innerHTML = `✓ Copied`;
       setTimeout(() => { btn.innerHTML = original; }, 2000);
     }
 
-    function speakReply(text) {
+    function speakReply(msgId) {
+      const text = rawReplies[msgId] || "";
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         window.speechSynthesis.speak(utterance);
-      } else {
-        alert("Text-to-speech not supported on this browser.");
       }
     }
 
-    function downloadReply(text) {
+    function downloadReply(msgId) {
+      const text = rawReplies[msgId] || "";
       const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -565,16 +607,17 @@
       chatScroll.scrollTop = chatScroll.scrollHeight;
     }
 
-    function createModelMessagePlaceholder() {
+    function createModelMessagePlaceholder(msgId) {
       const div = document.createElement("div");
       div.className = "message model";
+      div.id = `msg-${msgId}`;
       div.innerHTML = `
         <div class="role-header">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
           SMK Chatbot
         </div>
-        <div class="content">...</div>
-        <div class="response-actions" style="display:none;"></div>
+        <div class="content">Thinking...</div>
+        <div class="response-actions" style="display:none;" id="actions-${msgId}"></div>
       `;
       messageContainer.appendChild(div);
       chatScroll.scrollTop = chatScroll.scrollHeight;
@@ -584,10 +627,44 @@
       };
     }
 
+    async function executeModelRequest(apiKey, selectedModel, payload) {
+      const fallbackModels = [selectedModel, "gemini-2.0-flash", "gemini-1.5-flash"];
+      const uniqueModels = [...new Set(fallbackModels)];
+      let lastError = null;
+
+      for (const m of uniqueModels) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return data.candidates[0].content.parts[0].text;
+          }
+
+          if (data.error) {
+            lastError = data.error.message;
+            if (data.error.code === 503 || data.error.message.includes("demand")) {
+              continue;
+            }
+            throw new Error(data.error.message);
+          }
+        } catch (e) {
+          lastError = e.message;
+        }
+      }
+      throw new Error(lastError || "Model is currently experiencing high demand. Please select another model from the dropdown.");
+    }
+
     async function handleSend(retryPrompt = null) {
       const text = retryPrompt || promptInput.value.trim();
       const apiKey = apiKeyInput.value.trim();
-      const model = modelInput.value.trim() || "gemini-3.8-flash";
+      const model = modelSelect.value;
 
       if (!apiKey) {
         alert("Please paste your Gemini API key in the sidebar first.");
@@ -595,7 +672,6 @@
       }
       if (!text && !currentAttachment) return;
 
-      lastUserPrompt = text;
       const attached = currentAttachment;
       appendUserMessage(text || "(Sent attachment)", attached ? attached.name : null);
 
@@ -603,7 +679,6 @@
       promptInput.style.height = "24px";
       sendBtn.disabled = true;
 
-      // Construct user parts (including file attachment if present)
       const parts = [];
       if (attached) {
         parts.push({
@@ -620,9 +695,9 @@
       history.push({ role: "user", parts: parts });
       clearAttachedFile();
 
-      const { content: contentTarget, actions: actionsTarget } = createModelMessagePlaceholder();
+      const msgId = Date.now();
+      const { content: contentTarget, actions: actionsTarget } = createModelMessagePlaceholder(msgId);
 
-      // Add to sidebar history
       if (history.length === 1) {
         const item = document.createElement("div");
         item.className = "chat-item";
@@ -631,56 +706,22 @@
       }
 
       try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+        const replyText = await executeModelRequest(apiKey, model, { contents: history });
+        rawReplies[msgId] = replyText;
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: history })
-        });
+        renderMarkdown(replyText, contentTarget);
+        history.push({ role: "model", parts: [{ text: replyText }] });
 
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error?.message || "Failed request");
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullReply = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              try {
-                const json = JSON.parse(line.substring(6));
-                const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                fullReply += textChunk;
-                renderMarkdown(fullReply, contentTarget);
-                chatScroll.scrollTop = chatScroll.scrollHeight;
-              } catch (e) {}
-            }
-          }
-        }
-
-        history.push({ role: "model", parts: [{ text: fullReply }] });
-
-        // Populate response action buttons
         actionsTarget.innerHTML = `
-          <button class="action-btn" onclick="copyReply(this, \`${encodeURIComponent(fullReply)}\`)">📋 Copy</button>
-          <button class="action-btn" onclick="speakReply(decodeURIComponent(\`${encodeURIComponent(fullReply)}\`))">🔊 Listen</button>
-          <button class="action-btn" onclick="downloadReply(decodeURIComponent(\`${encodeURIComponent(fullReply)}\`))">💾 Save</button>
+          <button class="action-btn" onclick="copyReply('${msgId}', this)">📋 Copy</button>
+          <button class="action-btn" onclick="speakReply('${msgId}')">🔊 Listen</button>
+          <button class="action-btn" onclick="downloadReply('${msgId}')">💾 Save</button>
           <button class="action-btn" onclick="handleSend('${text.replace(/'/g, "\\'")}')">🔄 Regenerate</button>
         `;
         actionsTarget.style.display = "flex";
 
       } catch (err) {
-        contentTarget.innerHTML = `<span style="color:#f87171;">Error: ${err.message}</span>`;
+        contentTarget.innerHTML = `<span style="color:#f87171;">${err.message}</span>`;
       } finally {
         sendBtn.disabled = false;
         promptInput.focus();
